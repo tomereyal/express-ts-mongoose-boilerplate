@@ -17,9 +17,8 @@ const getAllTopics = (req: Request, res: Response, next: NextFunction) => {
 
 const createTopic = (req: Request, res: Response, next: NextFunction) => {
   logging.info(NAMESPACE, "createTopic function called");
-
-  const newTopic = new Topic({ name: req.body.name, author: "Luke Skywalker" });
-
+  const { name, author } = req.body;
+  const newTopic = new Topic({ name, author });
   newTopic
     .save()
     .then((newTopic) => {
