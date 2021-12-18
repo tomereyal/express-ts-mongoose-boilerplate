@@ -3,14 +3,18 @@ import express from "express";
 import bodyParser from "body-parser";
 import logging from "./config/logging";
 import config from "./config/config";
-import topicRoutes from "./routes/topic";
+import topicRoutes from "./routes/topic.route";
 import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import expressJwt from "express-jwt";
 
 const NAMESPACE = "Server";
-const router = express();
+const app = express();
 
-/**CONNECT TO MONGO */
-
+//==========================================================
+//                 CONNECTION TO MONGODB
+//==========================================================
 mongoose
   .connect(config.mongo.url, config.mongo.options)
   .then((result) => {
@@ -20,9 +24,11 @@ mongoose
     logging.error(NAMESPACE, error.message, error);
   });
 
-/** LOGGING THE REQUEST */
+//==========================================================
+//             TRACKING REQUESTS DURING DEVELOPMENT
+//==========================================================
 
-router.use((req, res, next) => {
+app.use((req, res, next) => {
   logging.info(
     NAMESPACE,
     `METHOD - [${req.method}], URL - [${req.url}], IP - [${req.socket.remoteAddress}]`
@@ -36,14 +42,25 @@ router.use((req, res, next) => {
   next();
 });
 
+//==========================================================
+//                   INCOMING DATA EXTRACTION
+//==========================================================
+
 //parse incoming req data
-router.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: false }));
 //JSON every response we send back
-router.use(bodyParser.json());
+app.use(bodyParser.json());
+//For extracting tokens
+app.use(cookieParser());
+
+//==========================================================
+//             SERVER SECURITY AND ALLOWED REQUESTS
+//==========================================================
 
 //this allows for requests to come from ANYWHERE
 //usually we remove this in production and predefine a list of IP adresseses that we validate as safe..
-router.use((req, res, next) => {
+
+app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
     "Access-Control-Allow-Headers",
@@ -58,20 +75,44 @@ router.use((req, res, next) => {
   next();
 });
 
-/**ROUTES */
+app.use(cors(config.cors));
 
-router.use("/api/topics", topicRoutes);
+// comment out this line if you want to bypass JWT check during development
+// When client attaches "bearer token" , expressJwt verifies it and if it is authenticated it will
+// app.use(
+//   expressJwt({
+//     secret: config.jwtSecret,
+//     algorithms: ["HS256"],
+//     requestProperty: "user",  //default token claims available under req.user
+//   }).unless({
+//     path: [
+//       "/api/users/register",
+//       "/api/users/login",
+//       "/api/users/logout",
+//       "/api/users",
+//     ],
+//   })
+// );
 
-/**ERROR HANDLING */
-router.use((req, res, next) => {
+//==========================================================
+//                     ROUTERS
+//==========================================================
+app.use("/api/topics", topicRoutes);
+
+//==========================================================
+//                  ERROR HANDLING
+//==========================================================
+app.use((req, res, next) => {
   const error = new Error("not found");
 
   return res.status(404).json({ message: error.message });
 });
 
-/**CREATE SERVER */
+//==========================================================
+//                 SERVER INITIALIZATION
+//==========================================================
 
-const httpServer = http.createServer(router);
+const httpServer = http.createServer(app);
 httpServer.listen(config.server.port, () => {
   logging.info(
     NAMESPACE,

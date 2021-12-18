@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import logging from "../config/logging";
-import Topic from "../schemas/topic.model";
+import Topic from "../models/topic.model";
 import { ok, err } from "../_helpers";
 const NAMESPACE = "Controllers topic.ts";
 

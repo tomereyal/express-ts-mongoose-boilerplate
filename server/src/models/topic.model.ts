@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import ITopic from "../interfaces/topic.type";
+import ITopic from "../interfaces/topic.interface";
 
 const TopicSchema: Schema = new Schema(
   {

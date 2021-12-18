@@ -1,6 +1,13 @@
 import dotenv from "dotenv";
 
 dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET || "secret";
+
+const CORS_CONFIG = {
+  origin: true, //included origin as true
+  credentials: true, //included credentials as true
+};
+
 
 const MONGO_OPTIONS = {
   useUnifiedTopology: true,
@@ -34,6 +41,8 @@ const SERVER = {
 };
 
 const config = {
+  cors: CORS_CONFIG,
+  jwtSecret: JWT_SECRET,
   mongo: MONGO,
   server: SERVER,
 };
