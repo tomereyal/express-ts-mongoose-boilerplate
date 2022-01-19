@@ -58,22 +58,6 @@ app.use(cookieParser());
 //==========================================================
 
 //this allows for requests to come from ANYWHERE
-//usually we remove this in production and predefine a list of IP adresseses that we validate as safe..
-
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin,X-Requested-with, Content-Type, Accept, Authorization"
-  );
-
-  //this is for specifing which methods we allow.. when working with other coders on the project
-  if (req.method == "OPTIONS") {
-    res.header("Access-Control-Allow-Methods", "GET PATCH DELETE POST PUT");
-    return res.status(200).json({});
-  }
-  next();
-});
 
 app.use(cors(config.cors));
 
